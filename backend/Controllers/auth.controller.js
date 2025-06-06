@@ -4,16 +4,17 @@ import { setTokenAsCookie } from "../Utils/setCookie.js";
 
 export async function signup(req, res) {
   const { name, email, password, username } = req.body;
+  const image = req.file;
 
   try {
-    // Check for required fields
+    // Check required fields
     if (!name || !email || !password || !username) {
       return res
         .status(400)
         .json({ success: false, msg: "All fields are required." });
     }
 
-    // Check if user already exists (optional but recommended)
+    // Check for existing user
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res
@@ -24,13 +25,18 @@ export async function signup(req, res) {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Get Cloudinary image URL (if uploaded)
+    const profileImageUrl = image?.path || ""; // optional
+
     // Create and save user
     const user = new User({
       name,
       email,
       password: hashedPassword,
       username,
+      profileUrl: profileImageUrl, // assuming you have this field in your User schema
     });
+
     const result = await user.save();
 
     if (!result) {
@@ -39,19 +45,22 @@ export async function signup(req, res) {
         .json({ success: false, msg: "Database error while creating user." });
     }
 
-    // Prepare safe user object for JWT
+    // Prepare safe user object for token
     const userObj = {
       _id: result._id,
       name: result.name,
       username: result.username,
+      profileUrl: result.profileUrl,
     };
 
     // Set token cookie
     await setTokenAsCookie(res, userObj);
 
-    return res
-      .status(201)
-      .json({ success: true, msg: "User created successfully", user: userObj });
+    return res.status(201).json({
+      success: true,
+      msg: "User created successfully",
+      user: userObj,
+    });
   } catch (error) {
     return res.status(500).json({ success: false, msg: error.message });
   }
@@ -89,6 +98,7 @@ export async function login(req, res) {
       _id: user._id,
       name: user.name,
       username: user.username,
+      profileUrl: user.profileUrl,
     };
 
     // 5. Set token in cookie
