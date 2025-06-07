@@ -5,6 +5,7 @@ import { config } from "dotenv";
 import { connectDB } from "./Utils/db.connect.js";
 import { authRouter } from "./Routes/auth.route.js";
 import { msgRouter } from "./Routes/msg.route.js";
+import { connectionRouter } from "./Routes/connection.route.js";
 config(); //load env variables
 
 const app = express();
@@ -25,6 +26,7 @@ connectDB();
 
 app.use("/auth", authRouter);
 app.use("/msg", msgRouter);
+app.use("/request", connectionRouter);
 app.get("/", (req, res) => {
   res.send("Server working");
 });
