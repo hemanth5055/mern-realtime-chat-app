@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import { config } from "dotenv";
 import { connectDB } from "./Utils/db.connect.js";
 import { authRouter } from "./Routes/auth.route.js";
+import { msgRouter } from "./Routes/msg.route.js";
 config(); //load env variables
 
 const app = express();
@@ -23,6 +24,7 @@ app.use(express.json());
 connectDB();
 
 app.use("/auth", authRouter);
+app.use("/msg", msgRouter);
 app.get("/", (req, res) => {
   res.send("Server working");
 });
