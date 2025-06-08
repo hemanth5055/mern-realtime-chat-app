@@ -1,11 +1,13 @@
 import React, { useContext, useEffect, useState } from "react";
 import Login from "./Login";
 import Signup from "./Signup";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
+import { userContext } from "../Context/user.context";
 
 export default function Register() {
   const [loginPage, setLoginPage] = useState(true);
   const navigate = useNavigate();
+  const { user } = useContext(userContext);
 
   return (
     <div className="w-full h-full flex justify-center items-center">

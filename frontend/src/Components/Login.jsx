@@ -1,12 +1,16 @@
-import React, { useContext, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useContext, useEffect, useState } from "react";
+import { Navigate, useNavigate } from "react-router-dom";
+import Loading from "./Loading";
+import { userContext } from "../Context/user.context";
 
 export default function Login({ changeMode }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const { loading, login, user } = useContext(userContext);
   const navigate = useNavigate();
   return (
     <div className="flex flex-col gap-5  rounded-[10px] p-4">
+      {loading ? <Loading></Loading> : ""}
       <div className="flex flex-col gap-1">
         {/* <h1 className="font-mont font-medium text-[18px] text-white">Email</h1> */}
         <input
@@ -33,9 +37,9 @@ export default function Login({ changeMode }) {
 
       <div
         className="flex justify-center bg-white font-mont font-medium h-[40px] text-black rounded-[10px] items-center cursor-pointer mt-2"
-        //   onClick={() => {
-        //     login(email, password, navigate);
-        //   }}
+        onClick={() => {
+          login(username, password, navigate);
+        }}
       >
         Login
       </div>

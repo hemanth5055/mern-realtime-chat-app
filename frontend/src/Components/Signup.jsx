@@ -1,5 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
+import { userContext } from "../Context/user.context";
+import Loading from "./Loading";
 
 export default function Signup({ changeMode }) {
   const [email, setEmail] = useState("");
@@ -8,9 +11,16 @@ export default function Signup({ changeMode }) {
   const [password, setPassword] = useState("");
   const [profileImage, setProfileImage] = useState(null); // new state
   const navigate = useNavigate();
+  const { signup, loading, user } = useContext(userContext);
+  useEffect(() => {
+    if (user) {
+      navigate("/");
+    }
+  });
 
   return (
     <div className="flex flex-col gap-5 rounded-[10px] p-4">
+      {loading ? <Loading></Loading> : ""}
       <div className="flex flex-col gap-1">
         <input
           type="text"
@@ -65,9 +75,9 @@ export default function Signup({ changeMode }) {
 
       <div
         className="flex justify-center bg-white font-mont font-medium h-[40px] text-black rounded-[10px] items-center cursor-pointer mt-2"
-        // onClick={() => {
-        //   signup(name, email, username, password, profileImage, navigate);
-        // }}
+        onClick={() => {
+          signup(name, email, username, password, profileImage, navigate);
+        }}
       >
         Signup
       </div>
