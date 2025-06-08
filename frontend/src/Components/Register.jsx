@@ -9,17 +9,17 @@ export default function Register() {
   const navigate = useNavigate();
   const { user, checkAuth } = useContext(userContext);
   useEffect(() => {
-    if (user) {
-      navigate("/");
-      return;
-    }
-    const runCheck = async () => {
-      const isAuth = await checkAuth();
-      if (isAuth) {
-        navigate("/");
-      }
-    };
-    runCheck();
+    // if (user) {
+    //   navigate("/");
+    //   return;
+    // }
+    // const runCheck = async () => {
+    //   const isAuth = await checkAuth();
+    //   if (isAuth) {
+    //     navigate("/");
+    //   }
+    // };
+    // runCheck();
   }, [user]);
 
   return (

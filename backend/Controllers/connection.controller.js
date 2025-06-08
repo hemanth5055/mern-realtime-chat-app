@@ -3,7 +3,6 @@ import { User } from "../Models/user.model.js";
 
 export async function acceptRequest(req, res) {
   const { requestId } = req.body;
-
   if (!requestId) {
     return res
       .status(400)
@@ -13,7 +12,7 @@ export async function acceptRequest(req, res) {
   try {
     const result = await Connection.updateOne(
       { _id: requestId },
-      { $set: { canCommunicate: true } }
+      { $set: { canCommunicate: true, status: "accepted" } }
     );
 
     if (result.matchedCount === 0) {
@@ -34,6 +33,34 @@ export async function acceptRequest(req, res) {
     return res
       .status(500)
       .json({ success: false, msg: "Failed to accept friend request" });
+  }
+}
+export async function removeRequest(req, res) {
+  const { requestId } = req.body;
+
+  if (!requestId) {
+    return res
+      .status(400)
+      .json({ success: false, msg: "Request ID is required" });
+  }
+
+  try {
+    const result = await Connection.deleteOne({ _id: requestId });
+
+    if (result.deletedCount === 0) {
+      return res
+        .status(404)
+        .json({ success: false, msg: "Request not found or already removed" });
+    }
+
+    return res
+      .status(200)
+      .json({ success: true, msg: "Friend request removed" });
+  } catch (error) {
+    console.error("Remove request error:", error);
+    return res
+      .status(500)
+      .json({ success: false, msg: "Failed to remove friend request" });
   }
 }
 
@@ -59,7 +86,7 @@ export async function sendRequest(req, res) {
     if (existing) {
       return res.status(400).json({
         success: false,
-        msg: "Friend request already exists or you are already connected",
+        msg: "Friend request already",
       });
     }
 
@@ -83,12 +110,12 @@ export async function sendRequest(req, res) {
 
 export async function allRequestsGot(req, res) {
   const user = req.user;
-
   try {
     const requests = await Connection.find({
       requestReceiver: user._id,
+      canCommunicate: false,
     })
-      .populate("requestSender", "name username")
+      .populate("requestSender", "name username profileUrl")
       .sort({ createdAt: -1 });
 
     return res.status(200).json({ success: true, requests });

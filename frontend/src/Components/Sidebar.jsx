@@ -10,7 +10,7 @@ import { userContext } from "../Context/user.context";
 
 export default function Sidebar() {
   const navigate = useNavigate();
-  const { user } = useContext(userContext);
+  const { user, logout } = useContext(userContext);
   return (
     <div className="bg-[#1A1A1A] flex flex-col gap-3 p-3 rounded-[15px] h-fit">
       <div
@@ -47,7 +47,7 @@ export default function Sidebar() {
       <div
         className="w-[50px] h-[50px] rounded-full bg-[#303030] cursor-pointer flex justify-center items-center"
         title="logout"
-        // onClick={() => navigate("/findfriends")}
+        onClick={() => logout(navigate)}
       >
         <TbLogout2 size={20} className="text-gray-300"></TbLogout2>
       </div>

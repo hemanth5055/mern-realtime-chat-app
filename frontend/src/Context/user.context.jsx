@@ -7,6 +7,7 @@ export const userContext = createContext();
 export const ContextProvider = ({ children }) => {
   const backend = import.meta.env.VITE_BACKEND;
   const [user, setUser] = useState(null);
+  const [pendingRequests, setPendingRequests] = useState(null);
   const [friends, setFriends] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -113,7 +114,137 @@ export const ContextProvider = ({ children }) => {
     }
   };
 
-  
+  const getUsers = async (username, setterFunc) => {
+    if (username.length == 0) {
+      setterFunc(null);
+      return;
+    }
+    try {
+      const res = await axios.get(
+        `${backend}/auth/userbyUsername?username=${username}`,
+        {
+          withCredentials: true,
+        }
+      );
+      console.log(res);
+      if (res.data.success) {
+        setterFunc(res.data.users);
+      } else {
+        setterFunc([]);
+        console.error("Failed to fetch users:", res.data.msg);
+      }
+    } catch (err) {
+      // console.error("Error fetching users:", err);
+      setterFunc([]);
+    }
+  };
+
+  const getDebouncedUsers = (() => {
+    let timer;
+    return (fn, delay, username, setterFunc) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        fn(username, setterFunc);
+      }, delay);
+    };
+  })();
+
+  const sendFriendRequest = async (receiverId) => {
+    try {
+      const res = await axios.post(
+        `${backend}/request/sendRequest`,
+        { receiverId },
+        { withCredentials: true }
+      );
+      console.log(res);
+      if (res.data.success) {
+        toast.success("Friend request sent successfully!");
+      } else {
+        toast.error(`Failed to send request: ${res.data.msg}`);
+      }
+    } catch (error) {
+      toast.error("Error sending friend request");
+      console.error("Error sending friend request:", error);
+    }
+  };
+
+  const getPendingRequests = async (setterFunc) => {
+    try {
+      const res = await axios.get(`${backend}/request/allRequestsGot`, {
+        withCredentials: true,
+      });
+      if (res.data.success) {
+        setterFunc(res.data.requests); // or whatever key your API returns
+      } else {
+        toast.error("Failed to fetch pending requests.");
+        setterFunc([]);
+      }
+    } catch (err) {
+      console.error("Error fetching pending requests:", err);
+      toast.error("Something went wrong while fetching requests.");
+      setterFunc([]);
+    }
+  };
+
+  const acceptRequest = async (requestId, setterFunc) => {
+    try {
+      const res = await axios.post(
+        `${backend}/request/acceptRequest`,
+        { requestId },
+        { withCredentials: true }
+      );
+
+      if (res.data.success) {
+        toast.success("Friend request accepted.");
+        setterFunc((prev) => prev.filter((req) => req._id !== requestId));
+      } else {
+        toast.error(res.data.msg || "Failed to accept request.");
+      }
+    } catch (err) {
+      console.error("Error accepting request:", err);
+      toast.error("Something went wrong while accepting request.");
+    }
+  };
+
+  const removeRequest = async (requestId, setterFunc) => {
+    try {
+      const res = await axios.delete(`${backend}/request/removeRequest`, {
+        data: { requestId },
+        withCredentials: true,
+      });
+
+      if (res.data.success) {
+        toast.success("Friend request removed.");
+        setterFunc((prev) => prev.filter((req) => req._id !== requestId));
+      } else {
+        toast.error(res.data.msg || "Failed to remove request.");
+      }
+    } catch (err) {
+      console.error("Error removing request:", err);
+      toast.error("Something went wrong while removing request.");
+    }
+  };
+  const logout = async (navigate) => {
+    try {
+      const res = await axios.get(
+        `${backend}/auth/logout`,
+        {},
+        {
+          withCredentials: true,
+        }
+      );
+      if (res.data.success) {
+        toast.success("Logged out successfully.");
+        setUser(null);
+        navigate("/auth");
+      } else {
+        toast.error(res.data.msg || "Logout failed.");
+      }
+    } catch (err) {
+      console.error("Logout error:", err);
+      toast.error("Something went wrong during logout.");
+    }
+  };
 
   return (
     <userContext.Provider
@@ -126,6 +257,15 @@ export const ContextProvider = ({ children }) => {
         login,
         checkAuth,
         getFriends,
+        getUsers,
+        getDebouncedUsers,
+        sendFriendRequest,
+        getPendingRequests,
+        removeRequest,
+        acceptRequest,
+        pendingRequests,
+        setPendingRequests,
+        logout,
       }}
     >
       {children}

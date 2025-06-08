@@ -16,6 +16,11 @@ const connectionSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    status: {
+      type: String,
+      enum: ["pending", "accepted", "rejected"], // list your allowed statuses here
+      default: "pending",
+    },
   },
   { timestamps: true }
 );

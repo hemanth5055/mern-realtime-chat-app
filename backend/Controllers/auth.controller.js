@@ -1,6 +1,7 @@
 import bcrypt from "bcrypt";
 import { User } from "../Models/user.model.js";
 import { setTokenAsCookie } from "../Utils/setCookie.js";
+import { Connection } from "../Models/connection.model.js";
 
 export async function signup(req, res) {
   const { name, email, password, username } = req.body;
@@ -136,4 +137,53 @@ export async function check(req, res) {
   return res
     .status(200)
     .json({ success: true, msg: "User Authorized", user: user });
+}
+
+export async function userbyUsername(req, res) {
+  const { username } = req.query;
+  const user = req.user;
+
+  if (!username) {
+    return res
+      .status(400)
+      .json({ success: false, msg: "Username is required." });
+  }
+
+  try {
+    // Find users matching the username (partial & case-insensitive)
+    const usersFromDB = await User.find({
+      username: { $regex: `^${username}`, $options: "i" },
+    }).select("_id name username profileUrl");
+
+    if (!usersFromDB || usersFromDB.length === 0) {
+      return res
+        .status(404)
+        .json({ success: false, msg: "User(s) not found." });
+    }
+
+    // Use Promise.all to run queries in parallel
+    const usersWithConnectionStatus = await Promise.all(
+      usersFromDB.map(async (foundUser) => {
+        const connectionExists = await Connection.findOne({
+          $or: [
+            { requestSender: foundUser._id, requestReceiver: user._id },
+            { requestSender: user._id, requestReceiver: foundUser._id },
+          ],
+        });
+        return {
+          _id: foundUser._id,
+          name: foundUser.name,
+          username: foundUser.username,
+          profileUrl: foundUser.profileUrl,
+          status: connectionExists?.status || null,
+        };
+      })
+    );
+
+    return res
+      .status(200)
+      .json({ success: true, users: usersWithConnectionStatus });
+  } catch (error) {
+    return res.status(500).json({ success: false, msg: error.message });
+  }
 }
