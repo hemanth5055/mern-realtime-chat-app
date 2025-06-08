@@ -1,14 +1,25 @@
-import React from "react";
+import React, { useContext, useEffect } from "react";
 import User from "./User";
 import Message from "./Message";
 import { LuSendHorizontal } from "react-icons/lu";
+import { userContext } from "../Context/user.context";
 
 export default function Home() {
+  const { user, loading, getFriends, friends } = useContext(userContext);
+  useEffect(() => {
+    const fetchFriends = async () => {
+      await getFriends();
+    };
+    fetchFriends();
+  });
+
   return (
     <div className="w-full h-full flex">
       {/* Show Users */}
       <div className="w-[25%] flex flex-col p-2 gap-3 overflow-y-scroll">
-        <User />
+        {friends?.map(() => (
+          <User></User>
+        ))}
       </div>
 
       {/* Chat Area */}

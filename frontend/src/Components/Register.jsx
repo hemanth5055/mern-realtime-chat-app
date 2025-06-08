@@ -7,7 +7,20 @@ import { userContext } from "../Context/user.context";
 export default function Register() {
   const [loginPage, setLoginPage] = useState(true);
   const navigate = useNavigate();
-  const { user } = useContext(userContext);
+  const { user, checkAuth } = useContext(userContext);
+  useEffect(() => {
+    if (user) {
+      navigate("/");
+      return;
+    }
+    const runCheck = async () => {
+      const isAuth = await checkAuth();
+      if (isAuth) {
+        navigate("/");
+      }
+    };
+    runCheck();
+  }, [user]);
 
   return (
     <div className="w-full h-full flex justify-center items-center">

@@ -7,6 +7,7 @@ export const userContext = createContext();
 export const ContextProvider = ({ children }) => {
   const backend = import.meta.env.VITE_BACKEND;
   const [user, setUser] = useState(null);
+  const [friends, setFriends] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const signup = async (
@@ -76,10 +77,56 @@ export const ContextProvider = ({ children }) => {
       setLoading(false);
     }
   };
+  const checkAuth = async () => {
+    try {
+      const res = await axios.get(`${backend}/auth/check`, {
+        withCredentials: true,
+      });
+
+      if (res.data.success) {
+        setUser(res.data.user);
+        return true;
+      } else {
+        setUser(null);
+        return false;
+      }
+    } catch (err) {
+      setUser(null);
+      console.error("Auth check failed:", err.response?.data || err.message);
+      return false;
+    }
+  };
+
+  const getFriends = async () => {
+    try {
+      const res = await axios.get(`${backend}/request/getFriends`, {
+        withCredentials: true,
+      });
+      if (res.data.success) {
+        setFriends(res.data.friends);
+      } else {
+        console.error("Failed to get friends:", res.data.message);
+        return [];
+      }
+    } catch (err) {
+      console.error("Error fetching friends:", err);
+    }
+  };
+
+  
 
   return (
     <userContext.Provider
-      value={{ user, setUser, signup, loading, ToastContainer, login }}
+      value={{
+        user,
+        setUser,
+        signup,
+        loading,
+        ToastContainer,
+        login,
+        checkAuth,
+        getFriends,
+      }}
     >
       {children}
     </userContext.Provider>

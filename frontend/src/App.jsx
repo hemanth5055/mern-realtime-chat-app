@@ -6,6 +6,7 @@ import Request from "./Components/Request";
 import Findfriends from "./Components/Findfriends";
 import Register from "./Components/Register";
 import { userContext } from "./Context/user.context";
+import PrivateRoute from "./Components/PrivateRoute";
 
 export default function App() {
   const location = useLocation();
@@ -29,10 +30,31 @@ export default function App() {
       />
       {!hideSidebar && <Sidebar />}
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route
+          path="/"
+          element={
+            <PrivateRoute>
+              <Home />
+            </PrivateRoute>
+          }
+        />
         <Route path="/auth" element={<Register />} />
-        <Route path="/requests" element={<Request />} />
-        <Route path="/findfriends" element={<Findfriends />} />
+        <Route
+          path="/requests"
+          element={
+            <PrivateRoute>
+              <Request />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/findfriends"
+          element={
+            <PrivateRoute>
+              <Findfriends />
+            </PrivateRoute>
+          }
+        />
       </Routes>
     </div>
   );
