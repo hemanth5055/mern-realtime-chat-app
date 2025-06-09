@@ -7,10 +7,12 @@ export default function Home() {
   const { getFriends, friends } = useContext(userContext);
   const [usersLoading, setusersLoading] = useState(false);
   useEffect(() => {
-    const fetchFriends = async () => {
-      await getFriends(setusersLoading);
-    };
-    fetchFriends();
+    if (!friends) {
+      const fetchFriends = async () => {
+        await getFriends(setusersLoading);
+      };
+      fetchFriends();
+    }
   }, []);
 
   return (

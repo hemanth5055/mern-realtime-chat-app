@@ -6,10 +6,12 @@ export default function Request() {
   const { getPendingRequests, pendingRequests, setPendingRequests } =
     useContext(userContext);
   useEffect(() => {
-    const temp = async () => {
-      await getPendingRequests(setPendingRequests);
-    };
-    temp();
+    if (!pendingRequests) {
+      const temp = async () => {
+        await getPendingRequests(setPendingRequests);
+      };
+      temp();
+    }
   }, []);
   return (
     <div className="w-full p-4 px-[40px] flex flex-col  gap-4">

@@ -43,6 +43,7 @@ export default function Chatarea() {
       bref.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
+
   return (
     <div className="w-[75%] relative bg-[#1A1A1A] rounded-[15px] flex flex-col items-center p-4">
       {selectedUser ? (
@@ -66,7 +67,7 @@ export default function Chatarea() {
           ) : (
             ""
           )}
-          <div className="flex-1 w-full px-4 overflow-y-auto flex flex-col gap-2">
+          <div className="flex-1 w-full px-4 overflow-y-scroll flex flex-col gap-2">
             {messages?.map((group) => (
               <div key={group.date} className="mb-6">
                 {/* Date header */}
@@ -93,9 +94,16 @@ export default function Chatarea() {
               type="text"
               value={msg}
               onChange={(e) => setMsg(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && msg.trim() !== "") {
+                  sendMessage(msg, selectedUser._id);
+                  setMsg("");
+                }
+              }}
               className="h-full w-full rounded-l-[20px] outline-none pl-4 px-2 font-mont text-white"
               placeholder="Write a message ..."
             />
+
             <div
               className="w-[40px] h-[40px] mx-5 flex justify-center items-center cursor-pointer"
               onClick={() => {
