@@ -45,7 +45,7 @@ export async function getMessages(req, res) {
         { senderId: receiverId, receiverId: user._id },
       ],
     })
-      .sort({ timestamp: -1 })
+      .sort({ timestamp: 1 })
       .limit(20);
 
     return res.status(200).json({ success: true, messages });

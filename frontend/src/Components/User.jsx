@@ -1,19 +1,35 @@
-import React from "react";
+import React, { useContext } from "react";
+import { userContext } from "../Context/user.context";
 
-export default function User() {
+export default function User({ user }) {
+  const { setselectedUser } = useContext(userContext);
   return (
-    <div className="w-full rounded-[15px] shrink-0 flex bg-[#1A1A1A] items-center py-[10px] pl-3 gap-2">
+    <div
+      className="relative w-full rounded-[15px] shrink-0 flex bg-[#1A1A1A] hover:bg-[#303030] items-center py-[10px] pl-3 gap-4 cursor-pointer"
+      onClick={() => {
+        setselectedUser((prev) => {
+          if (prev === user) {
+            return null; // Deselect if clicking same user again
+          }
+          return user; // Select new user
+        });
+      }}
+    >
       <div className="w-[50px] h-[50px] rounded-full bg-gray-600 relative">
-        {/* <div className="absolute w-[10px] h-[10px] bg-[#1dce20] rounded-full bottom-0 right-2"></div> */}
+        <img
+          src={user.profileUrl}
+          className="w-full h-full rounded-full object-cover"
+        />
       </div>
       <div className="flex flex-col gap-1">
         <h2 className="font-mont text-white text-[17px] font-medium">
-          Richard Wilson
+          {user.name}
         </h2>
         <h4 className="font-mont text-[#BFBFBF] text-[10px]">
-          Will see you soon
+          @{user.username}
         </h4>
       </div>
+      {/* <div className="absolute w-[12px] h-[12px] bg-[#1dce20] rounded-full  right-5"></div> */}
     </div>
   );
 }

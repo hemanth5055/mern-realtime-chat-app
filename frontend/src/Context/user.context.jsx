@@ -10,11 +10,13 @@ export const ContextProvider = ({ children }) => {
   const [pendingRequests, setPendingRequests] = useState(null);
   const [friends, setFriends] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [selectedUser, setselectedUser] = useState(null);
+  const [messages, setMessages] = useState(null);
 
   const signup = async (
     name,
-    username,
     email,
+    username,
     password,
     profileImage,
     navigate
@@ -79,6 +81,7 @@ export const ContextProvider = ({ children }) => {
     }
   };
   const checkAuth = async () => {
+    setLoading(true);
     try {
       const res = await axios.get(`${backend}/auth/check`, {
         withCredentials: true,
@@ -95,14 +98,18 @@ export const ContextProvider = ({ children }) => {
       setUser(null);
       console.error("Auth check failed:", err.response?.data || err.message);
       return false;
+    } finally {
+      setLoading(false);
     }
   };
 
-  const getFriends = async () => {
+  const getFriends = async (setuusersLoading) => {
+    setuusersLoading(true);
     try {
       const res = await axios.get(`${backend}/request/getFriends`, {
         withCredentials: true,
       });
+      console.log(res.data.friends);
       if (res.data.success) {
         setFriends(res.data.friends);
       } else {
@@ -111,6 +118,8 @@ export const ContextProvider = ({ children }) => {
       }
     } catch (err) {
       console.error("Error fetching friends:", err);
+    } finally {
+      setuusersLoading(false);
     }
   };
 
@@ -242,6 +251,58 @@ export const ContextProvider = ({ children }) => {
     }
   };
 
+  const sendMessage = async (msg, receiverId) => {
+    if (!msg.trim()) return;
+
+    try {
+      const res = await axios.post(
+        `${backend}/msg/send`,
+        {
+          msg,
+          receiverId,
+        },
+        {
+          withCredentials: true,
+        }
+      );
+
+      if (res.data.success) {
+        // Optionally update UI or message list here
+        setMessages((prev) => [...(prev || []), res.data.message]);
+        console.log("Message sent successfully");
+      } else {
+        console.error("Failed to send message:", res.data.msg);
+      }
+    } catch (err) {
+      console.error("Send message error:", err);
+    }
+  };
+
+  const getMessages = async (receiverId, setmsgLoading) => {
+    setmsgLoading(true);
+    if (!receiverId) return;
+    try {
+      const res = await axios.post(
+        `${backend}/msg/getMessages`,
+        { receiverId },
+        {
+          withCredentials: true,
+        }
+      );
+      if (res.data.success) {
+        setMessages(res.data.messages || []);
+      } else {
+        console.error("Failed to fetch messages:", res.data.msg);
+        setMessages([]); // optional: clear messages if fetch failed
+      }
+    } catch (err) {
+      console.error("Error fetching messages:", err.message || err);
+      setMessages([]); // fallback in case of error
+    } finally {
+      setmsgLoading(false);
+    }
+  };
+
   return (
     <userContext.Provider
       value={{
@@ -253,6 +314,7 @@ export const ContextProvider = ({ children }) => {
         login,
         checkAuth,
         getFriends,
+        friends,
         getUsers,
         getDebouncedUsers,
         sendFriendRequest,
@@ -262,6 +324,11 @@ export const ContextProvider = ({ children }) => {
         pendingRequests,
         setPendingRequests,
         logout,
+        selectedUser,
+        setselectedUser,
+        messages,
+        sendMessage,
+        getMessages,
       }}
     >
       {children}

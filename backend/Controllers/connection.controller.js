@@ -165,7 +165,7 @@ export async function getFriends(req, res) {
 
     // Fetch friend user details
     const friends = await User.find({ _id: { $in: friendIds } }).select(
-      "name username"
+      "_id name username profileUrl"
     );
 
     return res.status(200).json({ success: true, friends });

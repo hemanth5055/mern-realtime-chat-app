@@ -8,13 +8,14 @@ import Register from "./Components/Register";
 import { userContext } from "./Context/user.context";
 import PrivateRoute from "./Components/PrivateRoute";
 import { useEffect } from "react";
+import Loading from "./Components/Loading";
 
 export default function App() {
   const location = useLocation();
   const { ToastContainer } = useContext(userContext);
   const hideSidebarOnRoutes = ["/auth"];
   const hideSidebar = hideSidebarOnRoutes.includes(location.pathname);
-  const { user, checkAuth } = useContext(userContext);
+  const { user, checkAuth, loading } = useContext(userContext);
   const navigate = useNavigate();
   useEffect(() => {
     const runCheck = async () => {
@@ -27,6 +28,7 @@ export default function App() {
   }, []);
   return (
     <div className="w-full h-screen bg-black relative p-5 flex gap-2">
+      {loading ? <Loading></Loading> : ""}
       <ToastContainer
         position="top-right"
         autoClose={5000}
