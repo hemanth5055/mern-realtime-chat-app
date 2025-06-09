@@ -5,3 +5,6 @@
   --font-mont: "Montserrat", sans-serif;
   --font-play: "Playfair Display", sans-serif;
 }
+.Toastify__toast-container--top-right {
+  --toastify-font-family: "Montserrat";
+}

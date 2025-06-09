@@ -25,11 +25,15 @@ export default function User({ user }) {
         <h2 className="font-mont text-white text-[17px] font-medium">
           {user.name}
         </h2>
-        <h4 className="font-mont text-[#BFBFBF] text-[10px]">
+        <h4 className="font-mont text-[#BFBFBF] text-[10px] font-medium">
           @{user.username}
         </h4>
       </div>
-      {/* <div className="absolute w-[12px] h-[12px] bg-[#1dce20] rounded-full  right-5"></div> */}
+      {user.online ? (
+        <div className="absolute w-[12px] h-[12px] bg-[#1dce20] rounded-full  right-5"></div>
+      ) : (
+        <div className="absolute w-[12px] h-[12px] bg-[#333433] rounded-full  right-5"></div>
+      )}
     </div>
   );
 }

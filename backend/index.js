@@ -33,31 +33,31 @@ app.get("/", (req, res) => {
   res.send("Server working");
 });
 //socket-io
-const userMap = []; //userId-SocketId
+const userMap = new Map(); //userId-SocketId
 const io = new Server(expressServer, {
   cors: corsOptions,
 });
 io.on("connection", (socket) => {
   console.log("new user", socket.id);
-  //user-connected
-  socket.on("userConnected", (a, b) => {
-    userMap[a] = b;
+  socket.on("userConnected", (userId, socketId) => {
+    userMap.set(userId, socketId);
+    io.emit("getAllConnectedUsers", [...userMap.keys()]);
   });
-  //user-disconnected
+
   socket.on("disconnect", () => {
-    for (const userId in userMap) {
-      if (userMap[userId] === socket.id) {
-        delete userMap[userId];
-        break; // Optional: stop loop after first match
+    for (const [userId, id] of userMap.entries()) {
+      if (id === socket.id) {
+        userMap.delete(userId);
+        break;
       }
     }
+    io.emit("getAllConnectedUsers", [...userMap.keys()]);
   });
-  //send message to reciever if online
+
   socket.on("sendMessage", (messageObj) => {
-    if (userMap[messageObj.receiverId]) {
-      socket
-        .to(userMap[messageObj.receiverId])
-        .emit("messageRecieved", messageObj);
+    const receiverSocketId = userMap.get(messageObj.receiverId);
+    if (receiverSocketId) {
+      socket.to(receiverSocketId).emit("messageRecieved", messageObj);
     }
   });
 });

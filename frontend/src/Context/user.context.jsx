@@ -1,4 +1,4 @@
-import { createContext, useState } from "react";
+import { createContext, use, useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import io from "socket.io-client";
 import axios from "axios";
@@ -16,11 +16,23 @@ export const ContextProvider = ({ children }) => {
   const [socketState, setSocketState] = useState(null);
   const [selectedUser, setselectedUser] = useState(null);
   const [messages, setMessages] = useState(null);
+  const [onlineUsers, setonlineUsers] = useState(null);
   const selectedUserRef = useRef(selectedUser);
+
   // Update the ref whenever selectedUser changes
   useEffect(() => {
     selectedUserRef.current = selectedUser;
   }, [selectedUser]);
+  useEffect(() => {
+    if (friends && onlineUsers) {
+      const updatedFriends = friends.map((friend) => ({
+        ...friend,
+        online: onlineUsers.includes(friend._id),
+      }));
+      setFriends(updatedFriends);
+    }
+  }, [onlineUsers]);
+
   const signup = async (
     name,
     email,
@@ -118,7 +130,6 @@ export const ContextProvider = ({ children }) => {
       const res = await axios.get(`${backend}/request/getFriends`, {
         withCredentials: true,
       });
-      console.log(res.data.friends);
       if (res.data.success) {
         setFriends(res.data.friends);
       } else {
@@ -348,10 +359,12 @@ export const ContextProvider = ({ children }) => {
     const socket = io.connect(backend, { withCredentials: true });
     setSocketState(socket);
     socket.on("connect", () => {
-      console.log("Socket connected:", socket.id);
       socket.emit("userConnected", userId, socket.id);
     });
-
+    socket.on("getAllConnectedUsers", (onlineIds) => {
+      console.log(onlineIds)
+      setonlineUsers(onlineIds);
+    });
     socket.on("connect_error", (err) => {
       console.error("Socket connection error:", err);
     });
@@ -396,7 +409,7 @@ export const ContextProvider = ({ children }) => {
           }
         });
       }
-      toast(`${newMsg.senderName}:${newMsg.message}`);
+      toast(`${newMsg.senderName} : ${newMsg.message}`);
     });
   };
   return (
