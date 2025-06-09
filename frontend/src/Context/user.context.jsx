@@ -226,13 +226,9 @@ export const ContextProvider = ({ children }) => {
   };
   const logout = async (navigate) => {
     try {
-      const res = await axios.get(
-        `${backend}/auth/logout`,
-        {},
-        {
-          withCredentials: true,
-        }
-      );
+      const res = await axios.get(`${backend}/auth/logout`, {
+        withCredentials: true,
+      });
       if (res.data.success) {
         toast.success("Logged out successfully.");
         setUser(null);

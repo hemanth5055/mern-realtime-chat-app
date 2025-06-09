@@ -122,6 +122,7 @@ export async function logout(req, res) {
     httpOnly: true,
     sameSite: "none",
     secure: true,
+    path: "/",
   });
 
   // Respond with logout success
