@@ -27,7 +27,6 @@ export async function send(req, res) {
       .json({ success: false, msg: "Failed to send message" });
   }
 }
-
 export async function getMessages(req, res) {
   const { receiverId } = req.body;
   const user = req.user;
@@ -39,6 +38,7 @@ export async function getMessages(req, res) {
         .json({ success: false, msg: "Receiver ID is required" });
     }
 
+    // Fetch messages sorted oldest -> newest
     const messages = await Msg.find({
       $or: [
         { senderId: user._id, receiverId: receiverId },
@@ -48,7 +48,25 @@ export async function getMessages(req, res) {
       .sort({ timestamp: 1 })
       .limit(20);
 
-    return res.status(200).json({ success: true, messages });
+    // Group messages by date string (YYYY-MM-DD)
+    const grouped = {};
+    messages.forEach((msg) => {
+      const dateKey = msg.timestamp.toISOString().split("T")[0];
+      if (!grouped[dateKey]) {
+        grouped[dateKey] = [];
+      }
+      grouped[dateKey].push(msg);
+    });
+
+    // Convert grouped object into array for easier frontend consumption
+    const groupedMessages = Object.keys(grouped)
+      .sort((a, b) => new Date(a) - new Date(b)) // sort dates ascending
+      .map((date) => ({
+        date,
+        messages: grouped[date],
+      }));
+
+    return res.status(200).json({ success: true, groupedMessages });
   } catch (error) {
     console.error("Error fetching messages:", error);
     return res

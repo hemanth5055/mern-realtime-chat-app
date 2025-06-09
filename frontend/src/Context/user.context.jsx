@@ -266,13 +266,40 @@ export const ContextProvider = ({ children }) => {
         }
       );
 
-      if (res.data.success) {
-        // Optionally update UI or message list here
-        setMessages((prev) => [...(prev || []), res.data.message]);
-        console.log("Message sent successfully");
-      } else {
-        console.error("Failed to send message:", res.data.msg);
-      }
+      const newMsg = res.data.message;
+      const newMsgDate = newMsg.timestamp.split("T")[0]; // 'YYYY-MM-DD' from ISO string
+
+      setMessages((prev) => {
+        if (!prev || prev.length === 0) {
+          // No messages yet, create initial group
+          return [{ date: newMsgDate, messages: [newMsg] }];
+        }
+
+        // Try to find existing group for the message date
+        const existingGroupIndex = prev.findIndex(
+          (group) => group.date === newMsgDate
+        );
+
+        if (existingGroupIndex !== -1) {
+          // Group found, append new message to that group
+          const updatedGroup = {
+            ...prev[existingGroupIndex],
+            messages: [...prev[existingGroupIndex].messages, newMsg],
+          };
+
+          // Return new array with updated group
+          return [
+            ...prev.slice(0, existingGroupIndex),
+            updatedGroup,
+            ...prev.slice(existingGroupIndex + 1),
+          ];
+        } else {
+          // No group for the date, add new group at the end
+          return [...prev, { date: newMsgDate, messages: [newMsg] }];
+        }
+      });
+
+      console.log("Message sent successfully");
     } catch (err) {
       console.error("Send message error:", err);
     }
@@ -289,8 +316,9 @@ export const ContextProvider = ({ children }) => {
           withCredentials: true,
         }
       );
+      console.log(res.data);
       if (res.data.success) {
-        setMessages(res.data.messages || []);
+        setMessages(res.data.groupedMessages || []);
       } else {
         console.error("Failed to fetch messages:", res.data.msg);
         setMessages([]); // optional: clear messages if fetch failed

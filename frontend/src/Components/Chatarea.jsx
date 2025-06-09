@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import Message from "./Message";
 import { LuSendHorizontal } from "react-icons/lu";
 import { userContext } from "../Context/user.context";
@@ -8,6 +8,29 @@ export default function Chatarea() {
     useContext(userContext);
   const [msgLoading, setmsgLoading] = useState(false);
   const [msg, setMsg] = useState("");
+  const bref = useRef();
+  const formatDateHeader = (dateStr) => {
+    const today = new Date();
+    const yesterday = new Date();
+    yesterday.setDate(today.getDate() - 1);
+
+    const date = new Date(dateStr);
+
+    const isSameDay = (d1, d2) =>
+      d1.getFullYear() === d2.getFullYear() &&
+      d1.getMonth() === d2.getMonth() &&
+      d1.getDate() === d2.getDate();
+
+    if (isSameDay(date, today)) return "Today";
+    if (isSameDay(date, yesterday)) return "Yesterday";
+
+    return date.toLocaleDateString(undefined, {
+      weekday: "short",
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
 
   useEffect(() => {
     const updateMsgs = async () => {
@@ -15,6 +38,11 @@ export default function Chatarea() {
     };
     updateMsgs();
   }, [selectedUser]);
+  useEffect(() => {
+    if (bref?.current) {
+      bref.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages]);
   return (
     <div className="w-[75%] relative bg-[#1A1A1A] rounded-[15px] flex flex-col items-center p-4">
       {selectedUser ? (
@@ -39,15 +67,24 @@ export default function Chatarea() {
             ""
           )}
           <div className="flex-1 w-full px-4 overflow-y-auto flex flex-col gap-2">
-            {messages?.map((item, index) => {
-              return (
-                <Message
-                  key={index}
-                  msg={item}
-                  self={!(item.senderId === selectedUser._id)}
-                ></Message>
-              );
-            })}
+            {messages?.map((group) => (
+              <div key={group.date} className="mb-6">
+                {/* Date header */}
+                <div className="text-center text-gray-400 mb-4 font-mont font-medium">
+                  {formatDateHeader(group.date)}
+                </div>
+
+                {/* Messages for this date */}
+                {group.messages.map((item) => (
+                  <Message
+                    key={item._id}
+                    msg={item}
+                    self={item.senderId !== selectedUser._id} // true if message from self
+                  />
+                ))}
+              </div>
+            ))}
+            <div ref={bref} className="bottom-view w-full h-[10px]"></div>
           </div>
 
           {/* Input Box */}
