@@ -134,7 +134,6 @@ export async function logout(req, res) {
 
 export async function check(req, res) {
   const user = req.user;
-  console.log(user);
   return res
     .status(200)
     .json({ success: true, msg: "User Authorized", user: user });

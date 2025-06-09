@@ -15,13 +15,17 @@ export default function App() {
   const { ToastContainer } = useContext(userContext);
   const hideSidebarOnRoutes = ["/auth"];
   const hideSidebar = hideSidebarOnRoutes.includes(location.pathname);
-  const { user, checkAuth, loading } = useContext(userContext);
+  const { user, checkAuth, loading, handleSocketConnection } =
+    useContext(userContext);
   const navigate = useNavigate();
   useEffect(() => {
     const runCheck = async () => {
       const isAuth = await checkAuth();
       if (isAuth) {
+        await handleSocketConnection(isAuth._id);
         navigate("/");
+      } else {
+        navigate("/auth");
       }
     };
     runCheck();

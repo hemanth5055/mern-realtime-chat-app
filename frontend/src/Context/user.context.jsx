@@ -1,6 +1,9 @@
 import { createContext, useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
+import io from "socket.io-client";
 import axios from "axios";
+import { useRef } from "react";
+import { useEffect } from "react";
 
 export const userContext = createContext();
 
@@ -10,9 +13,14 @@ export const ContextProvider = ({ children }) => {
   const [pendingRequests, setPendingRequests] = useState(null);
   const [friends, setFriends] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [socketState, setSocketState] = useState(null);
   const [selectedUser, setselectedUser] = useState(null);
   const [messages, setMessages] = useState(null);
-
+  const selectedUserRef = useRef(selectedUser);
+  // Update the ref whenever selectedUser changes
+  useEffect(() => {
+    selectedUserRef.current = selectedUser;
+  }, [selectedUser]);
   const signup = async (
     name,
     email,
@@ -69,6 +77,7 @@ export const ContextProvider = ({ children }) => {
       if (res.data.success) {
         setUser(res.data.user);
         toast.success("Login successful");
+        await handleSocketConnection(res.data.user._id);
         navigate("/");
       } else {
         toast.error(res.data.msg || "Login failed");
@@ -89,15 +98,15 @@ export const ContextProvider = ({ children }) => {
 
       if (res.data.success) {
         setUser(res.data.user);
-        return true;
+        return res.data.user;
       } else {
         setUser(null);
-        return false;
+        return null;
       }
     } catch (err) {
       setUser(null);
       console.error("Auth check failed:", err.response?.data || err.message);
-      return false;
+      return null;
     } finally {
       setLoading(false);
     }
@@ -298,7 +307,11 @@ export const ContextProvider = ({ children }) => {
           return [...prev, { date: newMsgDate, messages: [newMsg] }];
         }
       });
-
+      if (socketState?.connected) {
+        socketState.emit("sendMessage", newMsg);
+      } else {
+        console.warn("Socket not connected. Cannot emit message.");
+      }
       console.log("Message sent successfully");
     } catch (err) {
       console.error("Send message error:", err);
@@ -331,6 +344,61 @@ export const ContextProvider = ({ children }) => {
     }
   };
 
+  const handleSocketConnection = async (userId) => {
+    const socket = io.connect(backend, { withCredentials: true });
+    setSocketState(socket);
+    socket.on("connect", () => {
+      console.log("Socket connected:", socket.id);
+      socket.emit("userConnected", userId, socket.id);
+    });
+
+    socket.on("connect_error", (err) => {
+      console.error("Socket connection error:", err);
+    });
+
+    // Optional: Handle disconnects
+    socket.on("disconnect", (reason) => {
+      console.log("Socket disconnected:", reason);
+    });
+
+    socket.on("messageRecieved", (newMsg) => {
+      console.log(newMsg);
+      // Only update messages if the message is from the selected user
+      if (
+        selectedUserRef.current &&
+        selectedUserRef.current._id === newMsg.senderId
+      ) {
+        console.log("hello");
+        const newMsgDate = newMsg.timestamp.split("T")[0];
+
+        setMessages((prev) => {
+          if (!prev || prev.length === 0) {
+            return [{ date: newMsgDate, messages: [newMsg] }];
+          }
+
+          const existingGroupIndex = prev.findIndex(
+            (group) => group.date === newMsgDate
+          );
+
+          if (existingGroupIndex !== -1) {
+            const updatedGroup = {
+              ...prev[existingGroupIndex],
+              messages: [...prev[existingGroupIndex].messages, newMsg],
+            };
+
+            return [
+              ...prev.slice(0, existingGroupIndex),
+              updatedGroup,
+              ...prev.slice(existingGroupIndex + 1),
+            ];
+          } else {
+            return [...prev, { date: newMsgDate, messages: [newMsg] }];
+          }
+        });
+      }
+      toast(`${newMsg.senderName}:${newMsg.message}`);
+    });
+  };
   return (
     <userContext.Provider
       value={{
@@ -357,6 +425,9 @@ export const ContextProvider = ({ children }) => {
         messages,
         sendMessage,
         getMessages,
+        socketState,
+        setSocketState,
+        handleSocketConnection,
       }}
     >
       {children}

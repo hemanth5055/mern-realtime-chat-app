@@ -14,12 +14,23 @@ export async function send(req, res) {
 
     // Create and save the message
     const newMessage = new Msg({
-      senderId: user._id,
-      receiverId: receiverId,
-      message: msg,
+      senderId: user._id, // ID of user sending the message
+      receiverId: receiverId, // ID of message recipient
+      message: msg, // message content
     });
+
+    // Save message to the database
     await newMessage.save();
-    return res.status(201).json({ success: true, message: newMessage });
+
+    // Add sender's name to the returned message object
+    const newMsg = newMessage.toObject(); // convert Mongoose doc to plain JS object
+    newMsg.senderName = user.name;
+
+    // Send the created message back in the response
+    return res.status(201).json({
+      success: true,
+      message: newMsg,
+    });
   } catch (error) {
     console.error("Message send error:", error);
     return res
@@ -46,7 +57,7 @@ export async function getMessages(req, res) {
       ],
     })
       .sort({ timestamp: 1 })
-      .limit(20);
+      .limit(100);
 
     // Group messages by date string (YYYY-MM-DD)
     const grouped = {};
