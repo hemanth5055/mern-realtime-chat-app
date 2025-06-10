@@ -96,6 +96,7 @@ export async function sendRequest(req, res) {
     });
 
     await conn.save();
+    await conn.populate("requestSender");
 
     return res
       .status(201)

@@ -17,7 +17,7 @@ export default function User({ user }) {
     >
       <div className="w-[50px] h-[50px] rounded-full bg-gray-600 relative">
         <img
-          src={user.profileUrl}
+          src={user.profileUrl == "" ? null : user.profileUrl}
           className="w-full h-full rounded-full object-cover"
         />
       </div>

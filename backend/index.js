@@ -70,14 +70,21 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on("startedTyping", (data) => {
-    const receiverSocketId = userMap.get(data.receiverId);
-    console.log(receiverSocketId);
+  // socket.on("startedTyping", (data) => {
+  //   const receiverSocketId = userMap.get(data.receiverId);
+  //   console.log(receiverSocketId);
+  //   if (receiverSocketId) {
+  //     io.to(receiverSocketId).emit("someBodyTyping", {
+  //       senderId: data.senderId,
+  //       receiverId: data.receiverId,
+  //     });
+  //   }
+  // });
+
+  socket.on("sendRequest", (data) => {
+    const receiverSocketId = userMap.get(data.requestReceiver);
     if (receiverSocketId) {
-      io.to(receiverSocketId).emit("someBodyTyping", {
-        senderId: data.senderId,
-        receiverId: data.receiverId,
-      });
+      io.to(receiverSocketId).emit("gotRequest", data);
     }
   });
 });

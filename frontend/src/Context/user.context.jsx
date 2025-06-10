@@ -178,6 +178,7 @@ export const ContextProvider = ({ children }) => {
       );
       console.log(res);
       if (res.data.success) {
+        socketState.emit("sendRequest", res.data.connection);
         toast.success("Friend request sent successfully!");
       } else {
         toast.error(`Failed to send request: ${res.data.msg}`);
@@ -417,6 +418,11 @@ export const ContextProvider = ({ children }) => {
         });
       }
       toast(`${newMsg.senderName} : ${newMsg.message}`);
+    });
+
+    socket.on("gotRequest", (data) => {
+      toast("New Request");
+      setPendingRequests((prev) => [...(prev || []), data]);
     });
   };
   return (
