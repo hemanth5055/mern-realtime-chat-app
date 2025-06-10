@@ -17,6 +17,7 @@ export default function Request() {
     <div className="w-full p-4 px-[40px] flex flex-col  gap-4">
       <h3 className="font-play text-[50px] text-white">Requests</h3>
       <div className="w-fit flex flex-wrap justify-start gap-5"></div>
+      {pendingRequests?.length == 0 ? <h1 className="font-mont text-red-400">* No Friend Requests</h1> : ""}
       {pendingRequests?.map((item, index) => (
         <RequestUser
           key={index}

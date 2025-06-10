@@ -21,7 +21,9 @@ export default function Home() {
         navigate("/");
       }
     };
-    temp();
+    if (user) {
+      temp();
+    }
   }, [user]);
   return (
     <div className="w-full h-full flex">

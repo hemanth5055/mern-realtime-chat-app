@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import { useContext } from "react";
 import Sidebar from "./Components/Sidebar";
 import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import Home from "./Components/Home";
@@ -9,12 +9,12 @@ import { userContext } from "./Context/user.context";
 import PrivateRoute from "./Components/PrivateRoute";
 import { useEffect } from "react";
 import Loading from "./Components/Loading";
-
 export default function App() {
   const location = useLocation();
   const { ToastContainer } = useContext(userContext);
   const hideSidebarOnRoutes = ["/auth"];
   const hideSidebar = hideSidebarOnRoutes.includes(location.pathname);
+
   const {
     user,
     setFriends,
@@ -27,7 +27,13 @@ export default function App() {
     friends,
   } = useContext(userContext);
   const navigate = useNavigate();
+
+  // Check if device is mobile
+  const isMobile = window.innerWidth <= 768;
+
   useEffect(() => {
+    if (isMobile) return; // Skip auth check on mobile
+
     const runCheck = async () => {
       try {
         const authUser = await checkAuth();
@@ -47,6 +53,7 @@ export default function App() {
     };
     runCheck();
   }, []);
+
   useEffect(() => {
     if (friends && onlineUsers) {
       const updatedFriends = friends.map((friend) => ({
@@ -57,9 +64,18 @@ export default function App() {
     }
   }, [onlineUsers]);
 
+  // Don't render app UI on mobile
+  if (isMobile) {
+    return (
+      <div className="w-full font-mont h-screen flex text-center items-center justify-center bg-black text-white text-xl">
+        This app is not supported on mobile devices.
+      </div>
+    );
+  }
+
   return (
     <div className="w-full h-screen bg-black relative p-5 flex gap-2">
-      {loading ? <Loading></Loading> : ""}
+      {loading ? <Loading /> : ""}
       <ToastContainer
         position="top-right"
         autoClose={5000}
