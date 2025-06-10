@@ -17,21 +17,13 @@ export const ContextProvider = ({ children }) => {
   const [selectedUser, setselectedUser] = useState(null);
   const [messages, setMessages] = useState(null);
   const [onlineUsers, setonlineUsers] = useState(null);
+  const [usersLoading, setusersLoading] = useState(false);
   const selectedUserRef = useRef(selectedUser);
 
   // Update the ref whenever selectedUser changes
   useEffect(() => {
     selectedUserRef.current = selectedUser;
   }, [selectedUser]);
-  useEffect(() => {
-    if (friends && onlineUsers) {
-      const updatedFriends = friends.map((friend) => ({
-        ...friend,
-        online: onlineUsers.includes(friend._id),
-      }));
-      setFriends(updatedFriends);
-    }
-  }, [onlineUsers]);
 
   const signup = async (
     name,
@@ -89,7 +81,6 @@ export const ContextProvider = ({ children }) => {
       if (res.data.success) {
         setUser(res.data.user);
         toast.success("Login successful");
-        await handleSocketConnection(res.data.user._id);
         navigate("/");
       } else {
         toast.error(res.data.msg || "Login failed");
@@ -260,6 +251,7 @@ export const ContextProvider = ({ children }) => {
       });
       if (res.data.success) {
         toast.success("Logged out successfully.");
+        socketState.disconnect();
         setUser(null);
         navigate("/auth");
       } else {
@@ -362,9 +354,24 @@ export const ContextProvider = ({ children }) => {
       socket.emit("userConnected", userId, socket.id);
     });
     socket.on("getAllConnectedUsers", (onlineIds) => {
-      console.log(onlineIds)
+      console.log(onlineIds);
       setonlineUsers(onlineIds);
     });
+    socket.on("singleUserConnected", (userId) => {
+      console.log("Connected", userId);
+      setonlineUsers((prev) => {
+        if (!prev.includes(userId)) {
+          return [...prev, userId];
+        }
+        return prev; // Don't add duplicates
+      });
+    });
+
+    socket.on("singleUserDisconnected", (userId) => {
+      console.log("Disconnected", userId);
+      setonlineUsers((prev) => prev.filter((id) => id !== userId));
+    });
+
     socket.on("connect_error", (err) => {
       console.error("Socket connection error:", err);
     });
@@ -425,6 +432,7 @@ export const ContextProvider = ({ children }) => {
         getFriends,
         friends,
         getUsers,
+        setFriends,
         getDebouncedUsers,
         sendFriendRequest,
         getPendingRequests,
@@ -436,11 +444,14 @@ export const ContextProvider = ({ children }) => {
         selectedUser,
         setselectedUser,
         messages,
+        onlineUsers,
         sendMessage,
         getMessages,
         socketState,
         setSocketState,
         handleSocketConnection,
+        usersLoading,
+        setusersLoading,
       }}
     >
       {children}

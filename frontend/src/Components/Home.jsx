@@ -4,17 +4,25 @@ import { userContext } from "../Context/user.context";
 import Chatarea from "./Chatarea";
 
 export default function Home() {
-  const { getFriends, friends } = useContext(userContext);
-  const [usersLoading, setusersLoading] = useState(false);
-  useEffect(() => {
-    if (!friends) {
-      const fetchFriends = async () => {
-        await getFriends(setusersLoading);
-      };
-      fetchFriends();
-    }
-  }, []);
+  const {
+    friends,
+    usersLoading,
+    user,
+    getFriends,
+    handleSocketConnection,
+    setusersLoading,
+  } = useContext(userContext);
 
+  useEffect(() => {
+    const temp = async () => {
+      await getFriends(setusersLoading);
+      await handleSocketConnection(user._id);
+      if (window.location.pathname !== "/") {
+        navigate("/");
+      }
+    };
+    temp();
+  }, [user]);
   return (
     <div className="w-full h-full flex">
       {/* Show Users */}

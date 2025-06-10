@@ -4,8 +4,14 @@ import { LuSendHorizontal } from "react-icons/lu";
 import { userContext } from "../Context/user.context";
 
 export default function Chatarea() {
-  const { selectedUser, messages, sendMessage, getMessages } =
-    useContext(userContext);
+  const {
+    selectedUser,
+    messages,
+    sendMessage,
+    getMessages,
+    user,
+    socketState,
+  } = useContext(userContext);
   const [msgLoading, setmsgLoading] = useState(false);
   const [msg, setMsg] = useState("");
   const bref = useRef();
@@ -43,7 +49,6 @@ export default function Chatarea() {
       bref.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
-
   return (
     <div className="w-[75%] relative bg-[#1A1A1A] rounded-[15px] flex flex-col items-center p-4">
       {selectedUser ? (
@@ -93,7 +98,10 @@ export default function Chatarea() {
             <input
               type="text"
               value={msg}
-              onChange={(e) => setMsg(e.target.value)}
+              onChange={(e) => {
+                setMsg(e.target.value);
+                handleTyping();
+              }}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && msg.trim() !== "") {
                   sendMessage(msg, selectedUser._id);

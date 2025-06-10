@@ -15,21 +15,48 @@ export default function App() {
   const { ToastContainer } = useContext(userContext);
   const hideSidebarOnRoutes = ["/auth"];
   const hideSidebar = hideSidebarOnRoutes.includes(location.pathname);
-  const { user, checkAuth, loading, handleSocketConnection } =
-    useContext(userContext);
+  const {
+    user,
+    setFriends,
+    checkAuth,
+    loading,
+    handleSocketConnection,
+    getFriends,
+    setusersLoading,
+    onlineUsers,
+    friends,
+  } = useContext(userContext);
   const navigate = useNavigate();
   useEffect(() => {
     const runCheck = async () => {
-      const isAuth = await checkAuth();
-      if (isAuth) {
-        await handleSocketConnection(isAuth._id);
-        navigate("/");
-      } else {
+      try {
+        const authUser = await checkAuth();
+        if (authUser) {
+          await getFriends(setusersLoading);
+          await handleSocketConnection(authUser._id);
+          if (window.location.pathname !== "/") {
+            navigate("/");
+          }
+        } else {
+          navigate("/auth");
+        }
+      } catch (err) {
+        console.error("Auth check failed:", err);
         navigate("/auth");
       }
     };
     runCheck();
   }, []);
+  useEffect(() => {
+    if (friends && onlineUsers) {
+      const updatedFriends = friends.map((friend) => ({
+        ...friend,
+        online: onlineUsers.includes(friend._id),
+      }));
+      setFriends(updatedFriends);
+    }
+  }, [onlineUsers]);
+
   return (
     <div className="w-full h-screen bg-black relative p-5 flex gap-2">
       {loading ? <Loading></Loading> : ""}

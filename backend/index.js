@@ -39,25 +39,45 @@ const io = new Server(expressServer, {
 });
 io.on("connection", (socket) => {
   console.log("new user", socket.id);
+  //on initial login send an array of online users
+  socket.emit("getAllConnectedUsers", [...userMap.keys()]);
+  //when a new user connects send the particular user details
   socket.on("userConnected", (userId, socketId) => {
     userMap.set(userId, socketId);
-    io.emit("getAllConnectedUsers", [...userMap.keys()]);
+    socket.broadcast.emit("singleUserConnected", userId);
   });
 
   socket.on("disconnect", () => {
+    let disconnectedUserId = null;
+
     for (const [userId, id] of userMap.entries()) {
       if (id === socket.id) {
+        disconnectedUserId = userId;
         userMap.delete(userId);
         break;
       }
     }
-    io.emit("getAllConnectedUsers", [...userMap.keys()]);
+
+    if (disconnectedUserId) {
+      io.emit("singleUserDisconnected", disconnectedUserId);
+    }
   });
 
   socket.on("sendMessage", (messageObj) => {
     const receiverSocketId = userMap.get(messageObj.receiverId);
     if (receiverSocketId) {
       socket.to(receiverSocketId).emit("messageRecieved", messageObj);
+    }
+  });
+
+  socket.on("startedTyping", (data) => {
+    const receiverSocketId = userMap.get(data.receiverId);
+    console.log(receiverSocketId);
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("someBodyTyping", {
+        senderId: data.senderId,
+        receiverId: data.receiverId,
+      });
     }
   });
 });
