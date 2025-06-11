@@ -11,8 +11,12 @@ export default function RequestUser({ user, requestId }) {
     <div className=" w-[350px] rounded-[15px]  shrink-0 flex justify-around bg-[#1A1A1A] items-center py-[10px] pl-3 gap-2">
       <div className="w-[50px] h-[50px] rounded-full bg-gray-600 ">
         <img
+          src={
+            user.profileUrl == ""
+              ? "https://t3.ftcdn.net/jpg/05/16/27/58/360_F_516275801_f3Fsp17x6HQK0xQgDQEELoTuERO4SsWV.jpg"
+              : user.profileUrl
+          }
           className="w-full h-full rounded-full object-cover"
-          src={user.profileUrl}
         />
       </div>
       <div className="flex flex-col gap-1">

@@ -29,11 +29,6 @@ export default function Home() {
     <div className="w-full h-full flex">
       {/* Show Users */}
       <div className="w-[25%] flex flex-col p-2 gap-3 overflow-y-scroll">
-        {usersLoading ? (
-          <h1 className="font-mont text-white">Loading..</h1>
-        ) : (
-          ""
-        )}
         {friends?.map((item, index) => (
           <User key={index} user={item}></User>
         ))}

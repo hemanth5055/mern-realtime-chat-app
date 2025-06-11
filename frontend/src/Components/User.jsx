@@ -17,7 +17,11 @@ export default function User({ user }) {
     >
       <div className="w-[50px] h-[50px] rounded-full bg-gray-600 relative">
         <img
-          src={user.profileUrl == "" ? null : user.profileUrl}
+          src={
+            user.profileUrl == ""
+              ? "https://t3.ftcdn.net/jpg/05/16/27/58/360_F_516275801_f3Fsp17x6HQK0xQgDQEELoTuERO4SsWV.jpg"
+              : user.profileUrl
+          }
           className="w-full h-full rounded-full object-cover"
         />
       </div>

@@ -67,11 +67,6 @@ export default function Chatarea() {
           </div>
 
           {/* Messages */}
-          {msgLoading ? (
-            <h1 className="font-mont text-white">Loading Message</h1>
-          ) : (
-            ""
-          )}
           <div className="flex-1 w-full px-4 overflow-y-scroll flex flex-col gap-2">
             {messages?.map((group) => (
               <div key={group.date} className="mb-6">
@@ -90,6 +85,13 @@ export default function Chatarea() {
                 ))}
               </div>
             ))}
+            {messages?.length == 0 ? (
+              <div className="noChat w-full flex justify-center font-mont text-white">
+                Say Hello !
+              </div>
+            ) : (
+              ""
+            )}
             <div ref={bref} className="bottom-view w-full h-[10px]"></div>
           </div>
 

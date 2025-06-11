@@ -4,14 +4,17 @@ import { LiaUserFriendsSolid } from "react-icons/lia";
 import { userContext } from "../Context/user.context";
 import { MdAccessTime } from "react-icons/md";
 
-
 export default function Sendrequest({ user }) {
   const { sendFriendRequest } = useContext(userContext);
   return (
     <div className=" w-[300px] rounded-[15px]  shrink-0 flex justify-around bg-[#1A1A1A] items-center py-[10px] pl-3 gap-2">
       <div className="w-[50px] h-[50px] rounded-full bg-gray-600 relative">
         <img
-          src={user.profileUrl}
+          src={
+            user.profileUrl == ""
+              ? "https://t3.ftcdn.net/jpg/05/16/27/58/360_F_516275801_f3Fsp17x6HQK0xQgDQEELoTuERO4SsWV.jpg"
+              : user.profileUrl
+          }
           className="w-full h-full rounded-full object-cover"
         />
       </div>
