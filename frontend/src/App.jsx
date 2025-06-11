@@ -9,6 +9,7 @@ import { userContext } from "./Context/user.context";
 import PrivateRoute from "./Components/PrivateRoute";
 import { useEffect } from "react";
 import Loading from "./Components/Loading";
+import Profile from "./Components/Profile";
 export default function App() {
   const location = useLocation();
   const { ToastContainer } = useContext(userContext);
@@ -98,6 +99,14 @@ export default function App() {
             </PrivateRoute>
           }
         />
+        <Route
+          path="/profile"
+          element={
+            <PrivateRoute>
+              <Profile></Profile>
+            </PrivateRoute>
+          }
+        ></Route>
         <Route path="/auth" element={<Register />} />
         <Route
           path="/requests"

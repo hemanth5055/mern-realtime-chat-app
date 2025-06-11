@@ -16,7 +16,7 @@ export default function Sidebar() {
       <div
         className="w-[50px] h-[50px] rounded-full bg-[#303030] cursor-pointer flex justify-center items-center"
         title="Profile"
-        // onClick={() => navigate("/")}
+        onClick={() => navigate("/profile")}
       >
         <img
           src={user?.profileUrl}

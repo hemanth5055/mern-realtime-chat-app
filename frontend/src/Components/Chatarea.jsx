@@ -57,8 +57,12 @@ export default function Chatarea() {
           <div className="w-full mb-4 flex items-center gap-4 px-4">
             <div className="w-[45px] h-[45px] bg-gray-400 rounded-full">
               <img
+                src={
+                  selectedUser.profileUrl == ""
+                    ? "https://t3.ftcdn.net/jpg/05/16/27/58/360_F_516275801_f3Fsp17x6HQK0xQgDQEELoTuERO4SsWV.jpg"
+                    : selectedUser.profileUrl
+                }
                 className="w-full h-full rounded-full object-cover"
-                src={selectedUser.profileUrl}
               />
             </div>
             <h3 className="text-white font-play text-[35px] font-light">
