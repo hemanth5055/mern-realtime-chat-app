@@ -5,8 +5,8 @@ import { useContext } from "react";
 import { userContext } from "../Context/user.context";
 
 export default function Findfriends() {
-  const [usersFromDb, setusersFromDb] = useState(null);
-  const { getUsers, getDebouncedUsers } = useContext(userContext);
+  const { getUsers, getDebouncedUsers, usersFromDb, setusersFromDb } =
+    useContext(userContext);
   return (
     <div className="w-full p-4 px-[40px] flex flex-col  gap-4">
       <h3 className="font-play text-[50px] text-white">Find Friends</h3>

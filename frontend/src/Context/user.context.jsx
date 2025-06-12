@@ -19,6 +19,7 @@ export const ContextProvider = ({ children }) => {
   const [onlineUsers, setonlineUsers] = useState(null);
   const [usersLoading, setusersLoading] = useState(false);
   const selectedUserRef = useRef(selectedUser);
+  const [usersFromDb, setusersFromDb] = useState(null);
 
   // Update the ref whenever selectedUser changes
   useEffect(() => {
@@ -170,24 +171,30 @@ export const ContextProvider = ({ children }) => {
   })();
 
   const sendFriendRequest = async (receiverId) => {
-    try {
-      const res = await axios.post(
-        `${backend}/request/sendRequest`,
-        { receiverId },
-        { withCredentials: true }
+  try {
+    const res = await axios.post(
+      `${backend}/request/sendRequest`,
+      { receiverId },
+      { withCredentials: true }
+    );
+    console.log(res);
+    if (res.data.success) {
+      socketState.emit("sendRequest", res.data.connection);
+      toast.success("Friend request sent successfully!");
+      setusersFromDb(prev =>
+        prev.map(user =>
+          user._id === receiverId ? { ...user, status: "pending" } : user
+        )
       );
-      console.log(res);
-      if (res.data.success) {
-        socketState.emit("sendRequest", res.data.connection);
-        toast.success("Friend request sent successfully!");
-      } else {
-        toast.error(`Failed to send request: ${res.data.msg}`);
-      }
-    } catch (error) {
-      toast.error("Error sending friend request");
-      console.error("Error sending friend request:", error);
+    } else {
+      toast.error(`Failed to send request: ${res.data.msg}`);
     }
-  };
+  } catch (error) {
+    toast.error("Error sending friend request");
+    console.error("Error sending friend request:", error);
+  }
+};
+
 
   const getPendingRequests = async (setterFunc) => {
     try {
@@ -458,6 +465,8 @@ export const ContextProvider = ({ children }) => {
         handleSocketConnection,
         usersLoading,
         setusersLoading,
+        usersFromDb,
+        setusersFromDb,
       }}
     >
       {children}
