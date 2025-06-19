@@ -71,7 +71,7 @@ export default function Chatarea() {
           </div>
 
           {/* Messages */}
-          <div className="flex-1 w-full px-4 overflow-y-scroll flex flex-col gap-2">
+          <div className="flex-1 w-full px-4 overflow-y-scroll hide-scrollbar flex flex-col gap-2">
             {messages?.map((group) => (
               <div key={group.date} className="mb-6">
                 {/* Date header */}
